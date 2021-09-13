@@ -1,7 +1,7 @@
 package com.example.tictactoe3.controller;
 
 import com.example.tictactoe3.model.Game;
-import com.example.tictactoe3.model.Join;
+import com.example.tictactoe3.model.Player;
 import com.example.tictactoe3.service.GameService;
 import com.example.tictactoe3.service.JoinService;
 import com.example.tictactoe3.utils.Const;
@@ -23,7 +23,7 @@ public class JoinController {
     private GameService gameService;
 
     @GetMapping("/players")
-    public List<Join> getAllPlayers() {
+    public List<Player> getAllPlayers() {
         return joinService.getAllJoins();
     }
 
@@ -31,7 +31,7 @@ public class JoinController {
     public ResponseEntity<String> joinGame(@PathVariable Integer id) {
         Game game = gameService.getGame(id);
         if (null != game && (!game.isThereSecondPlayer())) {
-            Join secondPlayer = createSecondPlayer(game);
+            Player secondPlayer = createSecondPlayer(game);
             joinService.addJoin(secondPlayer);
 
             game.setThereSecondPlayer(true);
@@ -50,8 +50,8 @@ public class JoinController {
         }
     }
 
-    private Join createSecondPlayer(Game game) {
-        Join j = new Join();
+    private Player createSecondPlayer(Game game) {
+        Player j = new Player();
         j.setGame(game);
         j.setToken(tokenUtils.generateToken());
         j.setFirstPlayer(false);

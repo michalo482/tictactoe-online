@@ -1,6 +1,6 @@
 package com.example.tictactoe3.service;
 
-import com.example.tictactoe3.model.Join;
+import com.example.tictactoe3.model.Player;
 import com.example.tictactoe3.repository.JoinRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,22 +14,22 @@ public class JoinService {
 
     private final JoinRepository joinRepository;
 
-    public List<Join> getAllJoins() {
-        List<Join> joined = new ArrayList<>();
+    public List<Player> getAllJoins() {
+        List<Player> joined = new ArrayList<>();
         joinRepository.findAll().forEach(joined::add);
         return joined;
     }
 
-    public Join getJoin(Long id) {
+    public Player getJoin(Long id) {
         return joinRepository.findById(id).orElseThrow();
     }
 
-    public Join findByToken(String token) {
+    public Player findByToken(String token) {
         return joinRepository.findByToken(token);
     }
 
-    public void addJoin(Join join) {
-        joinRepository.save(join);
+    public void addJoin(Player player) {
+        joinRepository.save(player);
     }
 
     public void deleteJoin(String token) {

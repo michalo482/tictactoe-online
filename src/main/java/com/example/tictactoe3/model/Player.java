@@ -10,7 +10,7 @@ import javax.persistence.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Join {
+public class Player {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

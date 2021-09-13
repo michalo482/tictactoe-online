@@ -2,7 +2,7 @@ package com.example.tictactoe3.controller;
 
 import com.example.tictactoe3.model.Game;
 import com.example.tictactoe3.model.GameStatus;
-import com.example.tictactoe3.model.Join;
+import com.example.tictactoe3.model.Player;
 import com.example.tictactoe3.service.GameService;
 import com.example.tictactoe3.service.JoinService;
 import com.example.tictactoe3.utils.Const;
@@ -20,9 +20,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GameController {
 
-    private GameService gameService;
-    private TokenUtils tokenUtils;
-    private JoinService joinService;
+    private final GameService gameService;
+    private final TokenUtils tokenUtils;
+    private final JoinService joinService;
 
     @PostMapping("/game")
     public ResponseEntity<String> createGame(HttpServletRequest request) {
@@ -30,7 +30,7 @@ public class GameController {
         game.setGameStatus(GameStatus.IN_PROGRESS);
         gameService.addGame(game);
 
-        Join firstPlayer = createJoinForFirstPlayer(game);
+        Player firstPlayer = createJoinForFirstPlayer(game);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set(Const.SET_AUTH_TOKEN, firstPlayer.getToken());
 
@@ -54,9 +54,9 @@ public class GameController {
                     final String x = reqBody.get(Const.POSITION).substring(0, 1);
                     final String y = reqBody.get(Const.POSITION).substring(1, 2);
 
-                    Join join = joinService.findByToken(authToken);
-                    if ((join.getIsFirstPlayer() && game.isFirstPlayerTurn())
-                            || (!join.getIsFirstPlayer() && !game.isFirstPlayerTurn())) {
+                    Player player = joinService.findByToken(authToken);
+                    if ((player.getIsFirstPlayer() && game.isFirstPlayerTurn())
+                            || (!player.getIsFirstPlayer() && !game.isFirstPlayerTurn())) {
                         boolean isMovementCorrect = game.getBoard().setFieldIfAllowed(game.isFirstPlayerTurn(),
                                 calculateX(x), Integer.valueOf(y));
                         if (isMovementCorrect) {
@@ -91,16 +91,16 @@ public class GameController {
         List<String> listHeaders = headers.get(Const.SET_AUTH_TOKEN);
 
         if (null != game && listHeaders != null && !listHeaders.isEmpty()) {
-            List<Join> allPlayers = joinService.getAllJoins();
+            List<Player> allPlayers = joinService.getAllJoins();
             String authToken = listHeaders.get(0);
 
             Long countOfPlayers = allPlayers.stream()
                     .filter(player -> player.getGame().getId() == gameId)
                     .count();
             if (countOfPlayers > 1 && isTokenCorrectForGame(authToken, gameId)) {
-                Join join = joinService.findByToken(authToken);
+                Player player = joinService.findByToken(authToken);
                 if (game.isGameFinished()) {
-                    if (join.isFirstPlayer()) {
+                    if (player.isFirstPlayer()) {
                         if (game.getGameStatus().equals(GameStatus.FIRST_PLAYER_WON)) {
                             return ResponseEntity.ok().body(Const.YOU_WON);
                         } else if (game.getGameStatus().equals(GameStatus.SECOND_PLAYER_WON)) {
@@ -118,7 +118,7 @@ public class GameController {
                         }
                     }
                 } else {
-                    if ((join.isFirstPlayer() && game.isFirstPlayerTurn()) || (!join.isFirstPlayer() && !game.isFirstPlayerTurn())) {
+                    if ((player.isFirstPlayer() && game.isFirstPlayerTurn()) || (!player.isFirstPlayer() && !game.isFirstPlayerTurn())) {
                         return ResponseEntity.ok().body(Const.YOUR_TURN);
                     } else return ResponseEntity.ok().body(Const.OPPONENT_TURN);
                 }
@@ -169,7 +169,7 @@ public class GameController {
     }
 
     private boolean isTokenCorrectForGame(String authToken, Integer gameId) {
-        Join j = joinService.findByToken(authToken);
+        Player j = joinService.findByToken(authToken);
         if (j != null && gameId != null && j.getGame().getId().equals(gameId)) {
             return true;
         } else
@@ -181,8 +181,8 @@ public class GameController {
         return gameService.getAllGames();
     }
 
-    private Join createJoinForFirstPlayer(Game game) {
-        Join firstJoiner = new Join();
+    private Player createJoinForFirstPlayer(Game game) {
+        Player firstJoiner = new Player();
         firstJoiner.setGame(game);
         firstJoiner.setToken(tokenUtils.generateToken());
         firstJoiner.setFirstPlayer(true);
